@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2048</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: rgb(207, 194, 194);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+      text-align: center;
+    }
+
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+      position: relative;
+      width: 80vw;
+      height: 80vw;
+    }
+
+    .tile {
+      width: 100%;
+      height: 100%;
+      background-color: #9ac5e8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5em;
+      color: #141414;
+      border-radius: 10px;
+      transition: transform 0.1s ease, background-color 0.3s ease;
+    }
+
+    .tile-2 { background-color: #eee4da; }
+    .tile-4 { background-color: #ede0c8; }
+    .tile-8 { background-color: #f2b179; }
+    .tile-16 { background-color: #f59563; }
+    .tile-32 { background-color: #f67c5f; }
+    .tile-64 { background-color: #f65e3b; }
+    .tile-128 { background-color: #edcf72; }
+    .tile-256 { background-color: #edcc61; }
+    .tile-512 { background-color: #edc850; }
+    .tile-1024 { background-color: #edc53f; }
+    .tile-2048 { background-color: #edc22e; }
+
+    button {
+      background-color: #6200ea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #3700b3;
+    }
+
+    button:active {
+      background-color: #03dac6;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div id="game-board"></div>
+
+  <div class="button-container">
+    <button onclick="endGame()">Завершить игру</button>
+    <button onclick="goBack()">Назад</button>
+  </div>
+
+  <script>
+    const boardSize = 4;
+    let board = Array.from({ length: boardSize }, () => Array(boardSize).fill(0));
+
+    function startGame() {
+      placeRandomTile();
+      placeRandomTile();
+      renderBoard();
+    }
+
+    function placeRandomTile() {
+      const emptyTiles = [];
+      for (let i = 0; i < boardSize; i++) {
+        for (let j = 0; j < boardSize; j++) {
+          if (board[i][j] === 0) {
+            emptyTiles.push([i, j]);
+          }
+        }
+      }
+      const [i, j] = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+      board[i][j] = Math.random() < 0.9 ? 2 : 4;
+    }
+
+    function renderBoard() {
+      const boardElement = document.getElementById("game-board");
+      boardElement.innerHTML = "";
+      for (let i = 0; i < boardSize; i++) {
+        for (let j = 0; j < boardSize; j++) {
+          const tile = document.createElement("div");
+          tile.classList.add("tile");
+          tile.classList.add(`tile-${board[i][j]}`);
+          tile.textContent = board[i][j] !== 0 ? board[i][j] : "";
+          boardElement.appendChild(tile);
+        }
+      }
+    }
+
+    // Функции для перемещения плиток
+    function moveLeft() {
+      let moved = false;
+      for (let i = 0; i < boardSize; i++) {
+        let newRow = board[i].filter(val => val !== 0);
+        for (let j = 0; j < newRow.length - 1; j++) {
+          if (newRow[j] === newRow[j + 1]) {
+            newRow[j] *= 2;
+            newRow[j + 1] = 0;
+          }
+        }
+        newRow = newRow.filter(val => val !== 0);
+        while (newRow.length < boardSize) {
+          newRow.push(0);
+        }
+        if (JSON.stringify(board[i]) !== JSON.stringify(newRow)) {
+          moved = true;
+        }
+        board[i] = newRow;
+      }
+      if (moved) {
+        placeRandomTile();
+        renderBoard();
+      }
+    }
+
+    function moveRight() {
+      for (let i = 0; i < boardSize; i++) {
+        board[i].reverse();
+      }moveLeft();
+      for (let i = 0; i < boardSize; i++) {
+        board[i].reverse();
+      }
+    }
+
+    function moveUp() {
+      board = rotateBoard(board, true);
+      moveLeft();
+      board = rotateBoard(board, false);
+    }
+
+    function moveDown() {
+      board = rotateBoard(board, true);
+      moveRight();
+      board = rotateBoard(board, false);
+    }
+
+    // Вспомогательная функция для поворота доски
+    function rotateBoard(board, counterClockwise = false) {
+      return board[0].map((_, index) => board.map(row => row[index])).reverse();
+    }
+
+    // Обработчики для свайпов
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    document.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    });
+
+    document.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+
+      // Проверка направления свайпа
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (diffX > 0) {
+          // Свайп вправо
+          moveRight();
+        } else {
+          // Свайп влево
+          moveLeft();
+        }
+      } else {
+        if (diffY > 0) {
+          // Свайп вниз
+          moveDown();
+        } else {
+          // Свайп вверх
+          moveUp();
+        }
+      }
+    });
+
+    function endGame() {
+      alert("Игра завершена!");
+    }
+
+    function goBack() {
+      window.history.back();
+    }
+
+    startGame();
+  </script>
+
+</body>
+</html>

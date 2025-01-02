@@ -1,58 +1,292 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Кликер с цыплёнком</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title></title>
+  <style>
+    /* Общие стили для темной темы */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+      padding-top: 40px; /* Больше отступ сверху */
+      padding-bottom: 60px; /* Больше отступ снизу */
+    }
 
-        .container {
-            margin-top: 50px;
-        }
+    /* Фон для премиум пользователей */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+      padding-top: 50px; /* Больше отступ сверху */
+      padding-bottom: 60px; /* Больше отступ снизу */
+      background-image: url('proxy-image.jpg'); /* Замените на свой URL */
+      background-size: cover; /* Чтобы фон растягивался на весь экран */
+      background-position: center; /* Центрирует изображение */
+      background-attachment: fixed; /* Фон фиксируется при прокрутке */
+    }
+    
 
-        h1 {
-            color: #333;
-        }
+    #premium-indicator {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 24px;
+      display: none; /* Скрываем по умолчанию */
+    }
 
-        #score {
-            font-size: 2em;
-            color: #ff5722;
-        }
+    #game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
 
-        #chick {
-            width: 150px;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
+    #chicken {
+      width: 150px;
+      height: 150px;
+      background-image: url('photo_2025-01-02_13-58-23.jpg'); /* Замените на свой URL */
+      background-size: cover;
+      background-position: center;
+      border-radius: 50%;
+      border: 5px solid #ffcc00;
+      box-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s ease;
+    }
 
-        #chick:active {
-            transform: scale(0.9);
-        }
-    </style>
+    #chicken:hover {
+      transform: scale(1.1);
+    }
+
+    #score-board {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+
+    #profile {
+      margin-top: 20px;
+      font-size: 18px;
+      display: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .shake {
+      animation: shake 0.2s ease-in-out;
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-10px); }
+      100% { transform: translateX(0); }
+    }
+
+    button {
+      background-color: #6608e9;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      width: 250px;
+    }
+
+    button:hover {
+      background-color: #3700b3;
+    }
+
+    button:active {
+      background-color: #03dac6;
+    }
+
+    button:disabled {
+      background-color: #555;
+      cursor: not-allowed;
+    }
+
+    #promo-code-input {
+      display: none;
+      margin-top: 10px;
+    }
+
+    #profile-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Кликер с цыплёнком</h1>
-        <p>Очки: <span id="score">0</span></p>
-        <img src="img/images.jpg" alt="Цыплёнок" id="chick" />
+
+  <div id="premium-background"></div>
+  <div id="premium-indicator">💎Premium</div>
+
+  <div id="game-container">
+    <button id="chicken" onclick="earnPoints()"></button>
+    <div id="score-board">
+      <p>Очки: <span id="score">0</span></p>
     </div>
-    <script>
-        let score = 0;
+  </div>
 
-        const chick = document.getElementById("chick");
-        const scoreDisplay = document.getElementById("score");
+  <button id="showProfileBtn" onclick="toggleProfile()">Профиль</button>
+  <button id="showOtherBtn" onclick="showOtherPage()">Другое</button>
 
-        chick.addEventListener("click", () => {
-            score++;
-            scoreDisplay.textContent = score;
-        });
-    </script>
+  <div id="profile">
+    <p><span id="profile-score">0</span></p>
+    <div id="profile-buttons">
+      <button id="get1000Points" onclick="get1000Points()">Получить 1000 очков</button>
+      <button id="tryLuck" onclick="tryLuck()">Испытать удачу</button>
+      <button id="showPremiumButton" onclick="showPromoCodeInput()">Premium💎</button>
+      <button id="earnButton" onclick="earnSoon()">EARN</button>
+      <button id="toggleProfile" onclick="toggleProfile()">Скрыть Профиль</button>
+    </div>
+  </div>
+
+  <div id="promo-code-input" class="hidden">
+    <input type="text" id="promo-code" placeholder="Введите промокод"><button onclick="redeemPromoCode()">Активировать</button>
+  </div>
+
+  <script>
+    // Предотвращаем масштабирование
+    document.addEventListener('gesturestart', (e) => e.preventDefault());
+    document.addEventListener('gesturechange', (e) => e.preventDefault());
+    document.addEventListener('gestureend', (e) => e.preventDefault());
+
+    let score = parseInt(localStorage.getItem("score")) || 0;
+    let subscribed = localStorage.getItem("subscribed") === 'true';
+    let isPremium = localStorage.getItem("isPremium") === 'true';
+
+    function updateScore() {
+      document.getElementById("score").textContent = score;
+      document.getElementById("profile-score").textContent = score;
+
+      // Премиум статус
+      const premiumIndicator = document.getElementById("premium-indicator");
+      const premiumBackground = document.getElementById("premium-background");
+
+      if (isPremium) {
+        premiumIndicator.style.display = "block";
+        premiumBackground.style.display = "block";  // Показываем фон премиум
+      } else {
+        premiumIndicator.style.display = "none";
+        premiumBackground.style.display = "none";  // Скрываем фон премиум
+      }
+
+      localStorage.setItem("score", score);
+    }
+
+    function earnPoints() {
+      let pointsToAdd = isPremium ? 6 : 2;
+      score += pointsToAdd;
+      updateScore();
+      triggerChickenAnimation();
+    }
+
+    function triggerChickenAnimation() {
+      const chicken = document.getElementById("chicken");
+      chicken.classList.add("shake");
+
+      if (navigator.vibrate) {
+        navigator.vibrate(100);
+      }
+
+      setTimeout(() => {
+        chicken.classList.remove("shake");
+      }, 200);
+    }
+
+    function toggleProfile() {
+      const profile = document.getElementById("profile");
+      const showProfileButton = document.getElementById("showProfileBtn");
+
+      if (profile.style.display === "block") {
+        profile.style.display = "none";
+        showProfileButton.style.display = "block";
+      } else {
+        profile.style.display = "block";
+        showProfileButton.style.display = "none";
+      }
+    }
+
+    function get1000Points() {
+      if (!subscribed) {
+        const channelUrl = "https://t.me/voco_in";
+        window.open(channelUrl, "_blank");
+        alert("После подписки вам будет добавлено 1000 очков!");
+
+        subscribed = true;
+        localStorage.setItem("subscribed", true);
+        score += 1000;
+        updateScore();
+      } else {
+        alert("Вы уже получили 1000 очков за подписку!");
+      }
+    }
+
+    function tryLuck() {
+      if (score >= 1000) {
+        score -= 1000;
+        const bonusPoints = Math.floor(Math.random() * 2000) + 1;
+        score += bonusPoints;
+        alert(`Вы получили ${bonusPoints} очков!`);
+        updateScore();
+      } else {
+        alert("Недостаточно очков для попытки!");
+      }
+    }
+
+    function showPromoCodeInput() {
+      document.getElementById("promo-code-input").style.display = "block";
+    }
+
+    function redeemPromoCode() {
+      const promoCode = document.getElementById("promo-code").value;
+      if (promoCode === "VOCOFF") {
+        isPremium = true;
+        localStorage.setItem("isPremium", true);
+        alert("Вы получили статус Premium!");
+        updateScore();
+        document.getElementById("promo-code-input").style.display = "none";  // Скрыть поле ввода
+      } else {
+        alert("Неверный промокод.");
+      }
+    }
+
+    function earnSoon() {
+      alert("Скоро будет доступно!");
+    }
+
+    function showOtherPage() {
+      window.location.href = "2048.html";  // Открытие страницы с игрой 2048
+    }
+
+    updateScore();
+  </script>
 </body>
 </html>
